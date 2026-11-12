@@ -25,11 +25,8 @@ struct PopoverView: View {
 
             if keyboard.isAvailable {
                 Divider().padding(.bottom, 12)
-                row(icon: keyboard.isOn ? "light.max" : "light.min",
-                    title: "Keyboard backlight",
-                    isOn: Binding(get: { keyboard.isOn }, set: { keyboard.setOn($0) }))
-                    .help("Turn the keyboard light on or off (\(Shortcuts.symbol)K)")
-                    .padding(.bottom, 12)
+                keyboardControl
+                    .padding(.bottom, 14)
             }
 
             Divider().padding(.bottom, 12)
@@ -139,6 +136,29 @@ struct PopoverView: View {
                 Image(systemName: "flame").foregroundStyle(.orange.opacity(0.85)).frame(width: 16)
             }
             .opacity(settings.enabled ? 1 : 0.55)
+        }
+    }
+
+    private var keyboardControl: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            sectionLabel("Keyboard backlight",
+                         value: keyboard.isOn ? "\(Int((keyboard.brightness * 100).rounded()))%" : "Off")
+            HStack(spacing: 8) {
+                // Tap the icon to switch the light off / back on in one click.
+                Button { keyboard.toggle() } label: {
+                    Image(systemName: keyboard.isOn ? "light.max" : "light.min")
+                        .foregroundStyle(keyboard.isOn ? Color.primary : Color.secondary)
+                        .frame(width: 16)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Turn the keyboard light \(keyboard.isOn ? "off" : "on") (\(Shortcuts.symbol)K)")
+                Slider(value: Binding(get: { keyboard.brightness },
+                                      set: { keyboard.setBrightness($0) }),
+                       in: 0...1)
+                    .controlSize(.small)
+                Image(systemName: "light.max").foregroundStyle(.secondary).frame(width: 16)
+            }
         }
     }
 

@@ -10,6 +10,8 @@ final class KeyboardBacklight: ObservableObject {
 
     @Published private(set) var isAvailable = false
     @Published private(set) var isOn = false
+    /// Current backlight level, 0...1.
+    @Published private(set) var brightness: Double = 0
 
     private typealias GetLevel = @convention(c) (AnyObject, Selector, UInt64) -> Float
     private typealias SetLevel = @convention(c) (AnyObject, Selector, Float, UInt64) -> Bool
@@ -66,21 +68,37 @@ final class KeyboardBacklight: ObservableObject {
     /// Re-read the hardware state (the user may have used the F-keys).
     func refresh() {
         guard isAvailable else { return }
-        let on = level > offThreshold
+        let current = level
+        let on = current > offThreshold
         if on != isOn { isOn = on }
+        let value = on ? Double(current) : 0
+        if abs(value - brightness) > 0.001 { brightness = value }
     }
 
     func setOn(_ on: Bool) {
         guard isAvailable, let client, let setLevel else { return }
         if on {
             let saved = Float(UserDefaults.standard.double(forKey: levelKey))
-            _ = setLevel(client, setSel, max(0.1, min(1, saved)), keyboardID)
+            let target = max(0.1, min(1, saved))
+            _ = setLevel(client, setSel, target, keyboardID)
+            brightness = Double(target)
         } else {
             let current = level
             if current > 0.05 { UserDefaults.standard.set(Double(current), forKey: levelKey) }
             _ = setLevel(client, setSel, 0, keyboardID)
+            brightness = 0
         }
         isOn = on
+    }
+
+    /// Set an explicit level, 0...1. Dragging to 0 turns the light off.
+    func setBrightness(_ value: Double) {
+        guard isAvailable, let client, let setLevel else { return }
+        let v = max(0, min(1, value))
+        _ = setLevel(client, setSel, Float(v), keyboardID)
+        brightness = v
+        isOn = Float(v) > offThreshold
+        if v > 0.05 { UserDefaults.standard.set(v, forKey: levelKey) }
     }
 
     func toggle() {

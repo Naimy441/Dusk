@@ -13,7 +13,7 @@ Open the DMG, drag **Dusk** into **Applications**, and launch it. Dusk runs in t
 - **Brightness slider**: dims from 100% down to 5%. The popover stays readable above the shade.
 - **Warmth**: an optional amber tint for late-night reading.
 - **Presets**: Low, Medium, Dark and Night, one click each.
-- **Keyboard backlight switch**: turns the MacBook keyboard light on and off from the menu bar.
+- **Keyboard backlight**: turn the MacBook keyboard light on or off, or set its brightness, from the menu bar.
 - **Schedule**: turns dimming on and off automatically, e.g. 10 PM to 7 AM. A manual override holds until the next scheduled change.
 - **Global shortcuts** (no Accessibility permission needed):
   - `⌃⌥⌘ ↑` / `⌃⌥⌘ ↓`: brighter / darker, with an on-screen indicator
