@@ -67,6 +67,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                                 action: #selector(toggleDimming), keyEquivalent: "")
         toggle.target = self
         menu.addItem(toggle)
+        let kb = KeyboardBacklight.shared
+        if kb.isAvailable {
+            kb.refresh()
+            let item = NSMenuItem(title: kb.isOn ? "Turn Off Keyboard Light" : "Turn On Keyboard Light",
+                                  action: #selector(toggleKeyboardLight), keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
+        }
         menu.addItem(.separator())
         for pct in [80, 60, 40, 20] {
             let item = NSMenuItem(title: "\(pct)% Brightness", action: #selector(setPreset(_:)), keyEquivalent: "")
@@ -153,6 +161,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             self.settings.enabled.toggle()
             self.showHUDIfNeeded()
         }
+        if KeyboardBacklight.shared.isAvailable {
+            center.register(keyCode: kVK_ANSI_K, modifiers: mods) { [weak self] in
+                self?.toggleKeyboardLight()
+            }
+        }
+    }
+
+    @objc private func toggleKeyboardLight() {
+        let kb = KeyboardBacklight.shared
+        kb.toggle()
+        guard !popover.isShown else { return }
+        HUD.shared.showMessage(icon: kb.isOn ? "light.max" : "light.min",
+                               text: kb.isOn ? "Keyboard light on" : "Keyboard light off")
     }
 
     private func nudge(_ delta: Double) {

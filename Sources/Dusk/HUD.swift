@@ -14,8 +14,19 @@ final class HUD {
     private let size = NSSize(width: 248, height: 52)
 
     func show(enabled: Bool, brightness: Double) {
+        model.message = nil
         model.enabled = enabled
         model.brightness = brightness
+        present()
+    }
+
+    /// A text-only variant, e.g. "Keyboard light off".
+    func showMessage(icon: String, text: String) {
+        model.message = (icon, text)
+        present()
+    }
+
+    private func present() {
 
         let panel = self.panel ?? makePanel()
         self.panel = panel
@@ -83,12 +94,29 @@ final class HUD {
 final class HUDModel: ObservableObject {
     @Published var enabled = false
     @Published var brightness = 1.0
+    @Published var message: (icon: String, text: String)?
 }
 
 private struct HUDView: View {
     @ObservedObject var model: HUDModel
 
     var body: some View {
+        if let message = model.message {
+            HStack(spacing: 10) {
+                Image(systemName: message.icon)
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 22)
+                Text(message.text)
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            levelView
+        }
+    }
+
+    private var levelView: some View {
         HStack(spacing: 12) {
             Image(systemName: model.enabled ? "moon.fill" : "sun.max.fill")
                 .font(.system(size: 17, weight: .semibold))

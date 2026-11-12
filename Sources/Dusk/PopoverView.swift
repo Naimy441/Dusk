@@ -3,6 +3,7 @@ import AppKit
 
 struct PopoverView: View {
     @ObservedObject var settings: Settings
+    @ObservedObject var keyboard = KeyboardBacklight.shared
     @State private var launchAtLogin = LoginItem.isEnabled
     @State private var loginMessage: String?
 
@@ -22,6 +23,15 @@ struct PopoverView: View {
             presetRow
                 .padding(.bottom, 16)
 
+            if keyboard.isAvailable {
+                Divider().padding(.bottom, 12)
+                row(icon: keyboard.isOn ? "light.max" : "light.min",
+                    title: "Keyboard backlight",
+                    isOn: Binding(get: { keyboard.isOn }, set: { keyboard.setOn($0) }))
+                    .help("Turn the keyboard light on or off (\(Shortcuts.symbol)K)")
+                    .padding(.bottom, 12)
+            }
+
             Divider().padding(.bottom, 12)
 
             scheduleSection
@@ -38,7 +48,10 @@ struct PopoverView: View {
         }
         .padding(16)
         .frame(width: 300)
-        .onAppear { launchAtLogin = LoginItem.isEnabled }
+        .onAppear {
+            launchAtLogin = LoginItem.isEnabled
+            keyboard.refresh()
+        }
     }
 
     // MARK: Header
@@ -209,7 +222,7 @@ struct PopoverView: View {
             VStack(alignment: .leading, spacing: 3) {
                 row(icon: "keyboard", title: "Keyboard shortcuts", isOn: $settings.hotkeysEnabled)
                 if settings.hotkeysEnabled {
-                    Text("\(Shortcuts.symbol)↑ ↓ adjust  ·  \(Shortcuts.symbol)D toggle")
+                    Text("\(Shortcuts.symbol)↑ ↓ adjust  ·  D toggle\(keyboard.isAvailable ? "  ·  K keyboard" : "")")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .padding(.leading, 26)
